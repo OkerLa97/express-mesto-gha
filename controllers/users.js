@@ -80,7 +80,7 @@ module.exports.createUser = (req, res, next) => {
       if (err.name === 'ValidationError') {
         const error = new ValidationError('Невалидные данные');
         next(error);
-      } else if (err.name === 'MongoError' && err.code === 11000) {
+      } else if (err.code === 11000) {
         const error = new ConflictError('Пользователь с таким email уже существует');
         next(error);
       } else {
