@@ -71,7 +71,11 @@ module.exports.createUser = (req, res, next) => {
       about,
       avatar,
     }))
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.send({
+      data: {
+        email: user.email, name: user.name, about: user.about, avatar: user.avatar, id: user._id,
+      },
+    }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         const error = new ValidationError('Невалидные данные');
