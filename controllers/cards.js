@@ -2,16 +2,12 @@ const Card = require('../models/card');
 const NotFoundError = require('../errors/NotFoundError');
 const ValidationError = require('../errors/ValidationError');
 const UnauthorizedError = require('../errors/UnauthorizedError');
-const InternalServerError = require('../errors/InternalServerError');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
     .populate(['owner', 'likes'])
     .then((cards) => res.send({ data: cards }))
-    .catch(() => {
-      const err = new InternalServerError('Ошибка сервера');
-      next(err);
-    });
+    .catch(next);
 };
 
 module.exports.createCard = (req, res, next) => {
@@ -22,12 +18,10 @@ module.exports.createCard = (req, res, next) => {
       if (err.name === 'ValidationError') {
         const error = new ValidationError('Ошибка валидации');
         next(error);
-      } else {
-        const error = new InternalServerError('Ошибка сервера');
-        next(error);
       }
-    })
-    .catch(next);
+
+      next(err);
+    });
 };
 
 module.exports.deleteCard = (req, res, next) => {
@@ -47,24 +41,20 @@ module.exports.deleteCard = (req, res, next) => {
             if (err.name === 'CastError') {
               const error = new ValidationError('Невалидный id');
               next(error);
-            } else {
-              const error = new InternalServerError('Ошибка сервера');
-              next(error);
             }
-          })
-          .catch(next);
+
+            next(err);
+          });
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         const error = new ValidationError('Невалидный id');
         next(error);
-      } else {
-        const error = new InternalServerError('Ошибка сервера');
-        next(error);
       }
-    })
-    .catch(next);
+
+      next(err);
+    });
 };
 
 module.exports.likeCard = (req, res, next) => {
@@ -80,12 +70,10 @@ module.exports.likeCard = (req, res, next) => {
       if (err.name === 'CastError') {
         const error = new ValidationError('Невалидный id');
         next(error);
-      } else {
-        const error = new InternalServerError('Ошибка сервера');
-        next(error);
       }
-    })
-    .catch(next);
+
+      next(err);
+    });
 };
 
 module.exports.dislikeCard = (req, res, next) => {
@@ -101,10 +89,8 @@ module.exports.dislikeCard = (req, res, next) => {
       if (err.name === 'CastError') {
         const error = new ValidationError('Невалидный id');
         next(error);
-      } else {
-        const error = new InternalServerError('Ошибка сервера');
-        next(error);
       }
-    })
-    .catch(next);
+
+      next(err);
+    });
 };

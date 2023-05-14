@@ -11,6 +11,13 @@ router.get('/', celebrate({
   }).unknown(true),
 }), getUsers);
 
+// getCurrentUser
+router.get('/me', celebrate({
+  headers: Joi.object().keys({
+    authorization: Joi.string().required(),
+  }).unknown(true),
+}), getCurrentUser);
+
 // getUser
 router.get('/:userId', celebrate({
   headers: Joi.object().keys({
@@ -20,13 +27,6 @@ router.get('/:userId', celebrate({
     userId: Joi.string().hex().length(24),
   }),
 }), getUser);
-
-// getCurrentUser
-router.get('/me', celebrate({
-  headers: Joi.object().keys({
-    authorization: Joi.string().required(),
-  }).unknown(true),
-}), getCurrentUser);
 
 // updateUser
 router.patch('/me', celebrate({

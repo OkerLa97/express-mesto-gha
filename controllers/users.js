@@ -29,12 +29,10 @@ module.exports.getUser = (req, res, next) => {
       if (err.name === 'CastError') {
         const error = new ValidationError('Невалидный id');
         next(error);
-      } else {
-        const error = new InternalServerError('Ошибка сервера');
-        next(error);
       }
-    })
-    .catch(next);
+
+      next(err);
+    });
 };
 
 module.exports.getCurrentUser = (req, res, next) => {
@@ -50,12 +48,10 @@ module.exports.getCurrentUser = (req, res, next) => {
       if (err.name === 'CastError') {
         const error = new ValidationError('Невалидный id');
         next(error);
-      } else {
-        const error = new InternalServerError('Ошибка сервера');
-        next(error);
       }
-    })
-    .catch(next);
+
+      next(err);
+    });
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -83,12 +79,10 @@ module.exports.createUser = (req, res, next) => {
       } else if (err.code === 11000) {
         const error = new ConflictError('Пользователь с таким email уже существует');
         next(error);
-      } else {
-        const error = new InternalServerError('Ошибка сервера');
-        next(error);
       }
-    })
-    .catch(next);
+
+      next(err);
+    });
 };
 
 module.exports.updateUser = (req, res, next) => {
@@ -102,12 +96,10 @@ module.exports.updateUser = (req, res, next) => {
       if (err.name === 'ValidationError') {
         const error = new ValidationError('Невалидные данные');
         next(error);
-      } else {
-        const error = new InternalServerError('Ошибка сервера');
-        next(error);
       }
-    })
-    .catch(next);
+
+      next(err);
+    });
 };
 
 module.exports.updateAvatar = (req, res, next) => {
@@ -121,12 +113,10 @@ module.exports.updateAvatar = (req, res, next) => {
       if (err.name === 'ValidationError') {
         const error = new ValidationError('Невалидные данные');
         next(error);
-      } else {
-        const error = new InternalServerError('Ошибка сервера');
-        next(error);
       }
-    })
-    .catch(next);
+
+      next(err);
+    });
 };
 
 module.exports.login = (req, res, next) => {
@@ -141,6 +131,5 @@ module.exports.login = (req, res, next) => {
     .catch(() => {
       const error = new UnauthorizedError('Неправильные почта или пароль');
       next(error);
-    })
-    .catch(next);
+    });
 };
