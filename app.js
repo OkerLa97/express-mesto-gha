@@ -2,6 +2,8 @@ const http2 = require('http2');
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const { errors } = require('celebrate');
+const auth = require('./middlewares/auth');
 
 const { PORT = 3000, BASE_PATH } = process.env;
 const app = express();
@@ -15,19 +17,35 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '6452b6c0f6553f34461ac423', // вставьте сюда _id созданного в предыдущем пункте пользователя
-  };
+// роуты, не требующие авторизации
+app.use('/signin', require('./routes/signin'));
+app.use('/signup', require('./routes/signup'));
 
-  next();
-});
+// авторизация
+app.use(auth);
 
+// роуты, требующие авторизации
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
+// обработчик ошибки 404
 app.use((req, res) => {
   res.status(http2.constants.HTTP_STATUS_NOT_FOUND).send({ message: 'Запрашиваемый ресурс не найден' });
+});
+
+// обработчик ошибок celebrate
+app.use(errors());
+
+// здесь обрабатываем все ошибки
+app.use((err, req, res) => {
+  const { statusCode = 500, message } = err;
+
+  res.status(statusCode).send({
+    // проверяем статус и выставляем сообщение в зависимости от него
+    message: statusCode === http2.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR
+      ? 'На сервере произошла ошибка'
+      : message,
+  });
 });
 
 app.listen(PORT, () => {

@@ -1,51 +1,93 @@
-const http2 = require('http2');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const NotFoundError = require('../errors/NotFoundError');
+const ValidationError = require('../errors/ValidationError');
+const UnauthorizedError = require('../errors/UnauthorizedError');
+const ConflictError = require('../errors/ConflictError');
+const InternalServerError = require('../errors/InternalServerError');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch((err) => {
-      res.status(http2.constants.HTTP_STATUS_BAD_REQUEST)
-        .send({ message: err.message });
+    .catch(() => {
+      const err = new InternalServerError('Ошибка сервера');
+      next(err);
     });
 };
 
-module.exports.getUser = (req, res) => {
+module.exports.getUser = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        res.status(http2.constants.HTTP_STATUS_NOT_FOUND)
-          .send({ message: 'Нет пользователя с таким id' });
+        throw new NotFoundError('Нет пользователя с таким id');
       } else {
         res.send({ data: user });
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(http2.constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Невалидный id' });
+        const error = new ValidationError('Невалидный id');
+        next(error);
       } else {
-        res.status(http2.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'Ошибка сервера' });
+        const error = new InternalServerError('Ошибка сервера');
+        next(error);
       }
-    });
+    })
+    .catch(next);
 };
 
-module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+module.exports.getCurrentUser = (req, res, next) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError('Нет пользователя с таким id');
+      } else {
+        res.send({ data: user });
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        const error = new ValidationError('Невалидный id');
+        next(error);
+      } else {
+        const error = new InternalServerError('Ошибка сервера');
+        next(error);
+      }
+    })
+    .catch(next);
+};
+
+module.exports.createUser = (req, res, next) => {
+  const {
+    email, password, name, about, avatar,
+  } = req.body;
+
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      email,
+      password: hash,
+      name,
+      about,
+      avatar,
+    }))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(http2.constants.HTTP_STATUS_BAD_REQUEST).send({ message: 'Невалидные данные' });
+        const error = new ValidationError('Невалидные данные');
+        next(error);
+      } else if (err.name === 'MongoError' && err.code === 11000) {
+        const error = new ConflictError('Пользователь с таким email уже существует');
+        next(error);
       } else {
-        res.status(http2.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'Ошибка сервера' });
+        const error = new InternalServerError('Ошибка сервера');
+        next(error);
       }
-    });
+    })
+    .catch(next);
 };
 
-module.exports.updateUser = (req, res) => {
+module.exports.updateUser = (req, res, next) => {
   User.findByIdAndUpdate(
     req.user._id,
     { name: req.body.name, about: req.body.about },
@@ -54,16 +96,17 @@ module.exports.updateUser = (req, res) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(http2.constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Невалидные данные' });
+        const error = new ValidationError('Невалидные данные');
+        next(error);
       } else {
-        res.status(http2.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'Ошибка сервера' });
+        const error = new InternalServerError('Ошибка сервера');
+        next(error);
       }
-    });
+    })
+    .catch(next);
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   User.findByIdAndUpdate(
     req.user._id,
     { avatar: req.body.avatar },
@@ -72,11 +115,28 @@ module.exports.updateAvatar = (req, res) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(http2.constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Невалидные данные' });
+        const error = new ValidationError('Невалидные данные');
+        next(error);
       } else {
-        res.status(http2.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'Ошибка сервера' });
+        const error = new InternalServerError('Ошибка сервера');
+        next(error);
       }
-    });
+    })
+    .catch(next);
+};
+
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  User.findUserByCredentials({ email, password })
+    .then((user) => {
+      res.send({
+        token: jwt.sign({ _id: user._id }, 'super-mega-ultra-over-strong-secret', { expiresIn: '7d' }),
+      });
+    })
+    .catch(() => {
+      const error = new UnauthorizedError('Неправильные почта или пароль');
+      next(error);
+    })
+    .catch(next);
 };
