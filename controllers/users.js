@@ -132,7 +132,7 @@ module.exports.updateAvatar = (req, res, next) => {
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
-  User.findUserByCredentials({ email, password })
+  User.findUserByCredentials(email, password)
     .then((user) => {
       res.send({
         token: jwt.sign({ _id: user._id }, 'super-mega-ultra-over-strong-secret', { expiresIn: '7d' }),
