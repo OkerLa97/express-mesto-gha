@@ -35,18 +35,11 @@ module.exports.deleteCard = (req, res, next) => {
       } else if (card.owner.toString() !== userId) {
         throw new ForbiddenError('Нельзя удалять чужие карточки');
       } else {
-        Card.findByIdAndRemove(req.params.cardId)
+        Card.deleteOne({ _id: req.params.cardId })
           .then((cardData) => {
             res.send({ data: cardData });
           })
-          .catch((err) => {
-            if (err.name === 'CastError') {
-              const error = new ValidationError('Невалидный id');
-              next(error);
-            }
-
-            next(err);
-          });
+          .catch(next);
       }
     })
     .catch((err) => {
