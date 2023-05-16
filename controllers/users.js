@@ -7,6 +7,8 @@ const UnauthorizedError = require('../errors/UnauthorizedError');
 const ConflictError = require('../errors/ConflictError');
 const InternalServerError = require('../errors/InternalServerError');
 
+const { AUTH_SECRET } = require('../config');
+
 module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
@@ -125,7 +127,7 @@ module.exports.login = (req, res, next) => {
   User.findUserByCredentials(email, password)
     .then((user) => {
       res.send({
-        token: jwt.sign({ _id: user._id }, 'super-mega-ultra-over-strong-secret', { expiresIn: '7d' }),
+        token: jwt.sign({ _id: user._id }, AUTH_SECRET, { expiresIn: '7d' }),
       });
     })
     .catch(() => {

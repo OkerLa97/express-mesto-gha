@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const http2 = require('http2');
+const { AUTH_SECRET } = require('../config');
 
 const handleAuthError = (res) => {
   res
@@ -20,7 +21,7 @@ module.exports = (req, res, next) => {
   let payload;
 
   try {
-    payload = jwt.verify(token, 'super-mega-ultra-over-strong-secret');
+    payload = jwt.verify(token, AUTH_SECRET);
   } catch (err) {
     return handleAuthError(res);
   }
