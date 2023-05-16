@@ -1,7 +1,7 @@
 const express = require('express');
 
-const http2 = require('http2');
 const { errors } = require('celebrate');
+const NotFoundError = require('../errors/NotFoundError');
 
 const errorHandler = require('../middlewares/errorHandler');
 const auth = require('../middlewares/auth');
@@ -20,8 +20,8 @@ router.use('/users', require('./users'));
 router.use('/cards', require('./cards'));
 
 // обработчик ошибки 404
-router.use((req, res) => {
-  res.status(http2.constants.HTTP_STATUS_NOT_FOUND).send({ message: 'Запрашиваемый ресурс не найден' });
+router.use((req, res, next) => {
+  next(new NotFoundError('Запрашиваемый ресурс не найден'));
 });
 
 // обработчик ошибок celebrate

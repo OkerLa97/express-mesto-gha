@@ -3,19 +3,14 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
 const ValidationError = require('../errors/ValidationError');
-const UnauthorizedError = require('../errors/UnauthorizedError');
 const ConflictError = require('../errors/ConflictError');
-const InternalServerError = require('../errors/InternalServerError');
 
 const { AUTH_SECRET } = require('../config');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => {
-      const err = new InternalServerError('Ошибка сервера');
-      next(err);
-    });
+    .catch(next);
 };
 
 module.exports.getUser = (req, res, next) => {
@@ -47,14 +42,7 @@ module.exports.getCurrentUser = (req, res, next) => {
         res.send({ data: user });
       }
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        const error = new ValidationError('Невалидный id');
-        next(error);
-      }
-
-      next(err);
-    });
+    .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -79,9 +67,12 @@ module.exports.createUser = (req, res, next) => {
       if (err.name === 'ValidationError') {
         const error = new ValidationError('Невалидные данные');
         next(error);
-      } else if (err.code === 11000) {
+        return;
+      }
+      if (err.code === 11000) {
         const error = new ConflictError('Пользователь с таким email уже существует');
         next(error);
+        return;
       }
 
       next(err);
@@ -95,14 +86,7 @@ module.exports.updateUser = (req, res, next) => {
     { new: true, runValidators: true },
   )
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        const error = new ValidationError('Невалидные данные');
-        next(error);
-      }
-
-      next(err);
-    });
+    .catch(next);
 };
 
 module.exports.updateAvatar = (req, res, next) => {
@@ -112,14 +96,7 @@ module.exports.updateAvatar = (req, res, next) => {
     { new: true, runValidators: true },
   )
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        const error = new ValidationError('Невалидные данные');
-        next(error);
-      }
-
-      next(err);
-    });
+    .catch(next);
 };
 
 module.exports.login = (req, res, next) => {
@@ -131,8 +108,5 @@ module.exports.login = (req, res, next) => {
         token: jwt.sign({ _id: user._id }, AUTH_SECRET, { expiresIn: '7d' }),
       });
     })
-    .catch(() => {
-      const error = new UnauthorizedError('Неправильные почта или пароль');
-      next(error);
-    });
+    .catch(next);
 };

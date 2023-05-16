@@ -20,6 +20,7 @@ module.exports.createCard = (req, res, next) => {
       if (err.name === 'ValidationError') {
         const error = new ValidationError('Ошибка валидации');
         next(error);
+        return;
       }
 
       next(err);
@@ -46,6 +47,7 @@ module.exports.deleteCard = (req, res, next) => {
       if (err.name === 'CastError') {
         const error = new ValidationError('Невалидный id');
         next(error);
+        return;
       }
 
       next(err);
@@ -65,6 +67,7 @@ module.exports.likeCard = (req, res, next) => {
       if (err.name === 'CastError') {
         const error = new ValidationError('Невалидный id');
         next(error);
+        return;
       }
 
       next(err);
@@ -84,6 +87,7 @@ module.exports.dislikeCard = (req, res, next) => {
       if (err.name === 'CastError') {
         const error = new ValidationError('Невалидный id');
         next(error);
+        return;
       }
 
       next(err);
