@@ -31,6 +31,7 @@ module.exports.getUser = (req, res, next) => {
       if (err.name === 'CastError') {
         const error = new ValidationError('Невалидный id');
         next(error);
+        return;
       }
 
       next(err);
