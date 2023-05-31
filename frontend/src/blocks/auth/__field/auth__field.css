@@ -1,0 +1,22 @@
+.auth__field {
+  border:0;
+  font-family:"Inter", "Arial ", sans-serif;
+  font-style:normal;
+  font-weight:400;
+  font-size:14px;
+  line-height:17px;
+  color:#cccccc;
+  padding:9px 0;
+
+  background-color: #000000;
+
+  border-bottom:2px solid #cccccc;
+}
+
+.auth__field::placeholder {
+  color: #cccccc;
+}
+
+.auth__field:nth-last-of-type(1){
+  margin-top:20px;
+}

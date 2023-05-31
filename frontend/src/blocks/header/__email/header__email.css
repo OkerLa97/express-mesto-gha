@@ -1,0 +1,17 @@
+.header__email {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 22px;
+  text-align: right;
+  color: #FFFFFF;
+  margin:0;
+}
+
+@media screen and (max-width:768px) {
+  /* TODO: Бургер в хеадере */
+  .header__email{
+    display: none;
+  }
+}

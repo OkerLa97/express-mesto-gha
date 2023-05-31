@@ -1,0 +1,13 @@
+.auth__popup-image {
+  margin: 25px auto 10px auto;
+  width: 120px;
+  height: 120px;
+}
+
+@media screen and (max-width:768px) {
+  .auth__popup-image {
+    margin: 20px auto;
+    width: 120px;
+    height: 120px;
+  }
+}
